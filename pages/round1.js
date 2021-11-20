@@ -12,9 +12,10 @@ function OniTestRound1() {
   const [canTestOni, setCanTestOni] = useState([]);
   const [connected, setConnected] = useState(false);
   const [loading, isLoading] = useState(false);
+  const [testing, isTesting] = useState(false);
   const [token1, setToken1] = useState();
   const [token2, setToken2] = useState();
-  const [result, setResult] = useState(false);
+  const [passedOni, setPassedOni] = useState([]);
 
   useEffect(() => {
     if (!account || !contract || !web3) {
@@ -69,28 +70,30 @@ function OniTestRound1() {
 
   async function getAvailableOni(oni) {
     let validOni = [];
+    let passedOni = [];
     if (!oni) {
       throw new Error("getAvailableOni: cannot provide 0 oni");
     }
     for (let i = 0; i < oni.length; i++) {
-      const oniLevel = await contract.methods.oni(i).call();
+      const oniLevel = await contract.methods.oni(i + 1).call();
       if (+oniLevel == 0) {
         validOni.push(oni[i]);
+      } else if (+oniLevel > 1) {
+        passedOni.push(oni[i]);
       }
     }
+
     setCanTestOni(validOni);
+    setPassedOni(passedOni);
   }
 
   async function Test(oniArray) {
     if (oniArray.length < 0) {
       throw new Error("cannot provide 0 oni in to the test.");
     }
-    await contract.methods
-      .oniTest(oniArray)
-      .send({ from: account })
-      .catch(() => {
-        alert("cannot enter the test, something went wrong");
-      });
+    const input = Array.isArray(oniArray) ? oniArray : new Array(oniArray);
+    await contract.methods.oniTest(input).send({ from: account });
+    await fetchAllOni();
   }
 
   async function enterMultiTesting() {
@@ -106,7 +109,7 @@ function OniTestRound1() {
     if (!(await isTestOpen())) {
       alert("Testing is closed");
     } else {
-      await Test(tokenArray);
+      token1 ? await Test(token1) : alert("token1 is null");
     }
   }
 
@@ -179,6 +182,14 @@ function OniTestRound1() {
         <div className="single-token-box">
           {loading ? <div>loading..</div> : singleTokenProvider()}
         </div>
+      </div>
+
+      <div className="result-box">
+        {passedOni.legnth > 0 ? (
+          <div>No result</div>
+        ) : (
+          passedOni.map((oni) => <div key={oni}>{oni}</div>)
+        )}
       </div>
     </div>
   );

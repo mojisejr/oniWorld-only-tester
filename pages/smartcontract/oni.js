@@ -73,6 +73,19 @@ export const abi = [
         name: "tokenId",
         type: "uint256",
       },
+    ],
+    name: "OniFailedToken",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
       {
         indexed: false,
         internalType: "uint256",
@@ -106,20 +119,6 @@ export const abi = [
       },
     ],
     name: "OniMinted",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      { indexed: false, internalType: "bool", name: "passed", type: "bool" },
-    ],
-    name: "OniTestingResult",
     type: "event",
   },
   {
@@ -526,4 +525,4 @@ export const abi = [
   },
 ];
 
-export const address = "0x45234ceAfbe76c3b4F5fc34c7B39922da748fba6";
+export const address = "0x64de2ac1c0D97C37e1daE4B1eF810a1D58DA13be";
