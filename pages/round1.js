@@ -13,10 +13,11 @@ function OniTestRound1() {
   const [connected, setConnected] = useState(false);
   const [loading, isLoading] = useState(false);
   const [testing, isTesting] = useState(false);
-  const [token1, setToken1] = useState();
-  const [token2, setToken2] = useState();
+  const [token1, setToken1] = useState(null);
+  const [token2, setToken2] = useState(null);
   const [passedOni, setPassedOni] = useState([]);
 
+  //check connection, config web3 and init smart contract object.
   useEffect(() => {
     if (!account || !contract || !web3) {
       const web3 = new Web3(ethereum);
@@ -33,6 +34,7 @@ function OniTestRound1() {
     }
   }, [connected]);
 
+  //connect with metamask and get connected account.
   async function connect() {
     try {
       const ethereum = await detectEthereumProvider();
@@ -50,10 +52,12 @@ function OniTestRound1() {
     }
   }
 
+  //check if test is opening
   async function isTestOpen() {
     return await contract.methods.is_test_open().call();
   }
 
+  //fetch all available Oni of current connected account
   async function fetchAllOni() {
     isLoading(true);
     const oniInWallet = await contract.methods.balanceOf(account).call();
@@ -68,6 +72,7 @@ function OniTestRound1() {
     isLoading(false);
   }
 
+  //sort fetched token to two category [avaliable], [passed]
   async function getAvailableOni(oni) {
     let validOni = [];
     let passedOni = [];
@@ -88,23 +93,35 @@ function OniTestRound1() {
   }
 
   async function Test(oniArray) {
+    isTesting(true);
     if (oniArray.length < 0) {
       throw new Error("cannot provide 0 oni in to the test.");
     }
     const input = Array.isArray(oniArray) ? oniArray : new Array(oniArray);
     await contract.methods.oniTest(input).send({ from: account });
     await fetchAllOni();
+    isTesting(false);
   }
 
+  //multi token provided testing function
   async function enterMultiTesting() {
-    const tokenArray = [token1, token2];
+    let tokenArray = [];
+    if (token1 && token2) {
+      tokenArray = [token1, token2];
+    }
     if (!(await isTestOpen())) {
       alert("Testing is closed");
     } else {
-      await Test(tokenArray);
+      console.log(tokenArray.length);
+      if (tokenArray.length == 2) {
+        await Test(tokenArray);
+      } else {
+        alert("token1 or 2 is not provided");
+      }
     }
   }
 
+  //single token provided testing function
   async function enterSingleTesting() {
     if (!(await isTestOpen())) {
       alert("Testing is closed");
@@ -113,12 +130,13 @@ function OniTestRound1() {
     }
   }
 
+  //twoTokenComponent
   function twoTokenProvider() {
     if (canTestOni.length > 0) {
       return (
-        <div>
+        <div className={styles.multiTokenBox}>
           <select
-            className="token-1"
+            className={styles.oniSelector}
             onChange={(e) => setToken1(e.target.value)}
           >
             <option>select first token</option>
@@ -131,7 +149,7 @@ function OniTestRound1() {
               ))}
           </select>
           <select
-            className="token-2"
+            className={styles.oniSelector}
             onChange={(e) => setToken2(e.target.value)}
           >
             <option>select second token</option>
@@ -143,20 +161,27 @@ function OniTestRound1() {
                 </option>
               ))}
           </select>
-          <button onClick={enterMultiTesting}>GO!</button>
+          <button
+            disabled={testing === false ? false : true}
+            className={styles.btnGo}
+            onClick={enterMultiTesting}
+          >
+            {testing === false ? "GO!" : "Testing.."}
+          </button>
         </div>
       );
     } else {
-      return <div>no Oni in your account</div>;
+      return <div>No Oni in your account</div>;
     }
   }
 
+  //single token component
   function singleTokenProvider() {
     if (canTestOni.length > 0) {
       return (
-        <div>
+        <div className={styles.singleTokenBox}>
           <select
-            className="token-1"
+            className={styles.oniSelector}
             onChange={(e) => setToken1(e.target.value)}
           >
             <option>select token</option>
@@ -166,29 +191,58 @@ function OniTestRound1() {
               </option>
             ))}
           </select>
-          <button onClick={enterSingleTesting}>GO!</button>
+          <button
+            disabled={testing === false ? false : true}
+            className={styles.btnGo}
+            onClick={enterSingleTesting}
+          >
+            {testing === false ? "GO!" : "Testing..."}
+          </button>
         </div>
       );
+    } else {
+      return <div>No Oni in your account</div>;
     }
   }
 
+  //main
   return (
-    <div>
-      <button onClick={connect}>Connect wallet</button>
-      <div className={styles.tokenProvidingBox}>
-        <div className="multi-token-box">
-          {loading ? <div>loading..</div> : twoTokenProvider()}
+    <div className={styles.container}>
+      <button onClick={connect} className={styles.btnConnect}>
+        Connect wallet
+      </button>
+      <div className={styles.testBox}>
+        <div className={styles.tokenProvidingBox}>
+          <div className="multi-token-box">
+            <h1>Multi-Oni</h1>
+            {loading ? (
+              <h3 className={styles.loading}>loading..</h3>
+            ) : (
+              twoTokenProvider()
+            )}
+          </div>
         </div>
-        <div className="single-token-box">
-          {loading ? <div>loading..</div> : singleTokenProvider()}
+        <div className={styles.tokenProvidingBox}>
+          <div className="single-token-box">
+            <h1>Single-Oni</h1>
+            {loading ? (
+              <h3 className={styles.loading}>loading..</h3>
+            ) : (
+              singleTokenProvider()
+            )}
+          </div>
         </div>
       </div>
-
       <div className="result-box">
-        {passedOni.legnth > 0 ? (
-          <div>No result</div>
+        <h2>Oni who passed this test</h2>
+        {loading ? (
+          <div className={styles.loading}>Loading..</div>
         ) : (
-          passedOni.map((oni) => <div key={oni}>{oni}</div>)
+          <ul>
+            {passedOni.map((oni) => (
+              <li key={oni}>Token #{oni}</li>
+            ))}
+          </ul>
         )}
       </div>
     </div>
