@@ -209,7 +209,7 @@ function OniTestRound1() {
   return (
     <div className={styles.container}>
       <button onClick={connect} className={styles.btnConnect}>
-        Connect wallet
+        {account ? `connected to : ${account}` : "Connect Wallet"}
       </button>
       <div className={styles.testBox}>
         <div className={styles.tokenProvidingBox}>
