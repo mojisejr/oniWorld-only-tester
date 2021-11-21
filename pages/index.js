@@ -12,9 +12,24 @@ export default function Home() {
       }}
     >
       <h1>Oni Test</h1>
-      <Link href="/round1">Round1</Link>
-      <Link href="/round2">Round2</Link>
-      <Link href="/round3">Round3</Link>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          fontSize: "24px",
+          fontWeight: "bold",
+        }}
+      >
+        <Link href="/round1">
+          <a style={{ padding: "3px" }}>Round1</a>
+        </Link>
+        <Link href="/round2">
+          <a style={{ padding: "3px" }}>Round2</a>
+        </Link>
+        <Link href="/round3">
+          <a style={{ padding: "3px" }}>Round3</a>
+        </Link>
+      </div>
     </div>
   );
 }

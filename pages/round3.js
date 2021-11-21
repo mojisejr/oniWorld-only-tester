@@ -4,6 +4,9 @@ import { useEffect, useState, useReducer } from "react";
 import { abi, address } from "./smartcontract/oni";
 import Link from "next/link";
 import styles from "../styles/oniTest.module.css";
+import NoOni from "./components/noOni";
+import RoundClosed from "./components/roundClosed";
+import ResultBox from "./components/resultBox";
 
 function OniTestRound3() {
   //round state
@@ -163,7 +166,7 @@ function OniTestRound3() {
   async function Test(oniArray) {
     isTesting(true);
     if (oniArray.length < 0) {
-      throw new Error("cannot provide 0 oni in to the test.");
+      throw new Error("Test: Cannot provide 0 oni in to the test.");
     }
     const input = Array.isArray(oniArray) ? oniArray : new Array(oniArray);
     await contract.methods.oniTest(input).send({ from: account });
@@ -176,12 +179,12 @@ function OniTestRound3() {
     let tokenArray = [];
     tokenArray = Object.values(state).filter((oni) => oni != null);
     if (!(await isTestOpen())) {
-      alert("Testing is closed");
+      alert("MultiTesting: Testing is closed");
     } else {
       if (tokenArray.length > 0) {
         await Test(tokenArray);
       } else {
-        alert("please provide all available tokens.");
+        alert("MultiTesting: Please provide all available tokens.");
       }
     }
   }
@@ -189,9 +192,11 @@ function OniTestRound3() {
   //single token provided testing function
   async function enterSingleTesting() {
     if (!(await isTestOpen())) {
-      alert("Testing is closed");
+      alert("SingleTesting: Testing is closed");
     } else {
-      state.token1 ? await Test(state.token1) : alert("token1 is null");
+      state.token1
+        ? await Test(state.token1)
+        : alert("SingleTesting: Token1 is null");
     }
   }
 
@@ -410,7 +415,7 @@ function OniTestRound3() {
         </div>
       );
     } else {
-      return <div>No Oni in your account</div>;
+      return <NoOni />;
     }
   }
 
@@ -497,7 +502,7 @@ function OniTestRound3() {
         </div>
       );
     } else {
-      return <div>No Oni in your account</div>;
+      return <NoOni />;
     }
   }
 
@@ -546,7 +551,7 @@ function OniTestRound3() {
         </div>
       );
     } else {
-      return <div>No Oni in your account</div>;
+      return <NoOni />;
     }
   }
 
@@ -581,22 +586,27 @@ function OniTestRound3() {
             className={styles.btnGo}
             onClick={enterSingleTesting}
           >
-            {testing === false ? "GO!" : "Testing..."}
+            {testing === false ? "GO!" : "Testing.."}
           </button>
         </div>
       );
     } else {
-      return <div>No Oni in your account</div>;
+      return <NoOni />;
     }
   }
 
-  //main
+  //main component
   function TestingMainComponent() {
     return (
       <div className={styles.container}>
-        <button onClick={connect} className={styles.btnConnect}>
-          {account ? `connected to : ${account}` : "Connect Wallet"}
-        </button>
+        <div className={styles.Header}>
+          <button onClick={connect} className={styles.btnConnect}>
+            {account ? `connected to : ${account}` : "Connect Wallet"}
+          </button>
+          <Link href="/">
+            <span className={styles.btnConnect}>Back</span>
+          </Link>
+        </div>
         <div className={styles.testBox}>
           <div className={styles.tokenProvidingBox}>
             <div className="multi-token-box">
@@ -663,48 +673,21 @@ function OniTestRound3() {
             </div>
           </div>
         </div>
-        <div className="result-box">
-          <h2>Oni who passed this test</h2>
-          {loading ? (
-            <div className={styles.loading}>Loading..</div>
-          ) : (
-            <ul>
-              {passedOni.map((oni) => (
-                <li key={oni}>Token #{oni}</li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <ResultBox loading={loading} passedOni={passedOni} />
       </div>
     );
   }
 
-  return TestingMainComponent();
-  // return (
-  //   <div>
-  //     {enabled ? (
-  //       TestingMainComponent()
-  //     ) : (
-  //       <div className={styles.notOpenContainer}>
-  //         <div
-  //           style={{
-  //             display: "flex",
-  //             flexDirection: "column",
-  //             alignItems: "center",
-  //           }}
-  //         >
-  //           <h1>
-  //             Round {currentRound} is opening, Round {round} will be open very
-  //             soon.
-  //           </h1>
-  //           <Link href="/">
-  //             <span className={styles.btnConnect}>Go Back</span>
-  //           </Link>
-  //         </div>
-  //       </div>
-  //     )}
-  //   </div>
-  // );
+  //page renderer can be used if round is open.
+  return (
+    <div>
+      {enabled ? (
+        TestingMainComponent()
+      ) : (
+        <RoundClosed round={round} currentRound={currentRound} />
+      )}
+    </div>
+  );
 }
 
 export default OniTestRound3;
