@@ -1,26 +1,33 @@
-import Web3 from "web3";
-import detectEthereumProvider from "@metamask/detect-provider";
 import { useEffect, useState, useReducer } from "react";
-import { abi, address } from "./smartcontract/oni";
 import Link from "next/link";
 import styles from "../styles/oniTest.module.css";
-import NoOni from "./components/noOni";
-import RoundClosed from "./components/roundClosed";
-import ResultBox from "./components/resultBox";
+import NoOni from "./components/NoOni";
+import RoundClosed from "./components/RoundClosed";
+import ResultBox from "./components/ResultBox";
+import TestingInputBox from "./components/TestingInputBox";
+import { useWallet, WalletState } from "./hooks/WalletConnect";
+import { useContract, ContractState } from "./hooks/OniContract";
 
 function OniTestRound2() {
+  //wallet
+  const { web3, account, connect, checkProvider, walletState } = useWallet();
+  //smart contract
+  const {
+    init,
+    isTestOpen,
+    getCurrentRound,
+    getAllOniByLevel,
+    fetchAllOniOf,
+    Test,
+    contractState,
+    setContractState,
+  } = useContract();
   //round state
   const round = 2;
   const [enabled, setEnabled] = useState(false);
   const [currentRound, setCurrentRound] = useState(null);
-  const [account, setAccount] = useState();
-  const [contract, setContract] = useState();
-  const [web3, setWeb3] = useState();
-  const [level0Oni, setLevel1Oni] = useState([]);
+  const [level0Oni, setLevel0Oni] = useState([]);
   const [level2Oni, setLevel2Oni] = useState([]);
-  const [connected, setConnected] = useState(false);
-  const [loading, isLoading] = useState(false);
-  const [testing, isTesting] = useState(false);
   const [state, dispatch] = useReducer(oniSelectionReducer, {
     token1: null,
     token2: null,
@@ -32,42 +39,30 @@ function OniTestRound2() {
 
   //check connection, config web3 and init smart contract object.
   useEffect(() => {
-    if (!account || !contract || !web3) {
-      const web3 = new Web3(ethereum);
-      const contract = new web3.eth.Contract(abi, address);
-      setConnected(false);
-      setWeb3(web3);
-      setContract(contract);
-    } else {
-      setConnected(true);
+    checkProvider();
+    if (walletState == WalletState.READY) {
+      init(web3);
     }
-    if (connected) {
-      fetchAllOni();
+  }, [walletState]);
+
+  useEffect(() => {
+    if (contractState == ContractState.READY) {
+      isRound2();
+      if (walletState == WalletState.OK) {
+        getAvailableOni();
+      }
     }
-  }, [connected]);
+  }, [walletState, contractState]);
 
   //check round
-  useEffect(() => {
-    if (contract) {
-      isRound2();
-    }
-  }, [contract]);
-
-  //connect with metamask and get connected account.
-  async function connect() {
-    try {
-      const ethereum = await detectEthereumProvider();
-      if (!ethereum) {
-        return;
-      }
-      ethereum.request({ method: "eth_requestAccounts" }).then((accounts) => {
-        if (accounts.length > 0) {
-          setAccount(accounts[0]);
-          setConnected(true);
-        }
-      });
-    } catch (e) {
-      console.log(e.message);
+  async function isRound2() {
+    const result = await getCurrentRound();
+    if (result == round) {
+      setCurrentRound(result);
+      setEnabled(true);
+    } else {
+      setCurrentRound(result);
+      setEnabled(false);
     }
   }
 
@@ -87,73 +82,15 @@ function OniTestRound2() {
     }
   }
 
-  //check if test is opening
-  async function isTestOpen() {
-    return await contract.methods.is_test_open().call();
-  }
-
-  //check currentRound
-  async function isRound2() {
-    const result = await contract.methods.currentRound().call();
-    if (result == round) {
-      setCurrentRound(result);
-      setEnabled(true);
-    } else {
-      setCurrentRound(result);
-      setEnabled(false);
-    }
-  }
-
   //fetch all available Oni of current connected account
-  async function fetchAllOni() {
-    isLoading(true);
-    const oniInWallet = await contract.methods.balanceOf(account).call();
-    let fetchedOni = [];
-    //fetch tokenIds from wallet
-    for (let i = 0; i < +oniInWallet; i++) {
-      fetchedOni.push(
-        +(await contract.methods.tokenOfOwnerByIndex(account, i).call())
-      );
-    }
-    await getAvailableOni(fetchedOni);
-    isLoading(false);
-  }
-
-  //sort fetched token to two category [avaliable], [passed]
-  async function getAvailableOni(oni) {
-    let level0Oni = [];
-    let level2Oni = [];
-    let passedOni = [];
-    if (!oni) {
-      throw new Error("getAvailableOni: cannot provide 0 oni");
-    }
-    for (let i = 0; i < oni.length; i++) {
-      const oniLevel = await contract.methods.oni(i + 1).call();
-      if (+oniLevel === 0) {
-        level0Oni.push(oni[i]);
-      } else if (+oniLevel === 2) {
-        level2Oni.push(oni[i]);
-      } else if (+oniLevel === 3) {
-        passedOni.push(oni[i]);
-      } else {
-        continue;
-      }
-    }
-    setLevel1Oni(level0Oni);
-    setLevel2Oni(level2Oni);
-    setPassedOni(passedOni);
-  }
-
-  //testing function that interact with smart contract
-  async function Test(oniArray) {
-    isTesting(true);
-    if (oniArray.length < 0) {
-      throw new Error("Test: Cannot provide 0 oni in to the test.");
-    }
-    const input = Array.isArray(oniArray) ? oniArray : new Array(oniArray);
-    await contract.methods.oniTest(input).send({ from: account });
-    await fetchAllOni();
-    isTesting(false);
+  async function getAvailableOni() {
+    setContractState(ContractState.LOADING);
+    const allOni = await fetchAllOniOf(account);
+    const oni = await getAllOniByLevel(allOni);
+    setLevel0Oni(oni.level0Oni);
+    setLevel2Oni(oni.level2Oni);
+    setPassedOni(oni.level3Oni);
+    setContractState(ContractState.SUCCESS);
   }
 
   //multi token provided testing function
@@ -164,7 +101,8 @@ function OniTestRound2() {
       alert("MultiTesting: Testing is closed");
     } else {
       if (tokenArray.length > 0) {
-        await Test(tokenArray);
+        await Test(tokenArray, account);
+        await getAvaliableOni();
       } else {
         alert("MultiTesting: Please provide all available tokens.");
       }
@@ -177,8 +115,9 @@ function OniTestRound2() {
       alert("SingleTesting: Testing is closed");
     } else {
       state.token1
-        ? await Test(state.token1)
+        ? await Test(state.token1, account)
         : alert("SingleTesting: Token1 is null");
+      await getAvailableOni();
     }
   }
 
@@ -256,11 +195,11 @@ function OniTestRound2() {
               ))}
           </select>
           <button
-            disabled={testing === false ? false : true}
+            disabled={contractState == ContractState.SUCCESS ? false : true}
             className={styles.btnGo}
             onClick={enterMultiTesting}
           >
-            {testing === false ? "GO!" : "Testing.."}
+            {contractState == ContractState.SUCCESS ? "GO!" : "Testing.."}
           </button>
         </div>
       );
@@ -305,11 +244,11 @@ function OniTestRound2() {
               ))}
           </select>
           <button
-            disabled={testing === false ? false : true}
+            disabled={contractState == ContractState.SUCCESS ? false : true}
             className={styles.btnGo}
             onClick={enterMultiTesting}
           >
-            {testing === false ? "GO!" : "Testing.."}
+            {contractState == ContractState.SUCCESS ? "GO!" : "Testing.."}
           </button>
         </div>
       );
@@ -336,11 +275,11 @@ function OniTestRound2() {
             ))}
           </select>
           <button
-            disabled={testing === false ? false : true}
+            disabled={contractState == ContractState.SUCCESS ? false : true}
             className={styles.btnGo}
             onClick={enterSingleTesting}
           >
-            {testing === false ? "GO!" : "Testing.."}
+            {contractState == ContractState.SUCCESS ? "GO!" : "Testing.."}
           </button>
         </div>
       );
@@ -362,50 +301,22 @@ function OniTestRound2() {
           </Link>
         </div>
         <div className={styles.testBox}>
-          <div className={styles.tokenProvidingBox}>
-            <div className="multi-token-box">
-              <h1>Multi-Oni Level: 2</h1>
-              {loading ? (
-                <h3 className={styles.loading}>loading..</h3>
-              ) : (
-                twoTokenProvider()
-              )}
-            </div>
-          </div>
-          <div className={styles.tokenProvidingBox}>
-            <div className="single-token-box">
-              <h1>Single-Oni : Level 2</h1>
-              {loading ? (
-                <h3 className={styles.loading}>loading..</h3>
-              ) : (
-                singleTokenProvider(2)
-              )}
-            </div>
-          </div>
+          <TestingInputBox title="Multi-Oni : Level 2" loading={contractState}>
+            {twoTokenProvider()}
+          </TestingInputBox>
+          <TestingInputBox title="Single-Oni : Level 2" loading={contractState}>
+            {singleTokenProvider(2)}
+          </TestingInputBox>
         </div>
         <div className={styles.testBox}>
-          <div className={styles.tokenProvidingBox}>
-            <div className="multi-token-box">
-              <h1>Multi-Oni Level: 0</h1>
-              {loading ? (
-                <h3 className={styles.loading}>loading..</h3>
-              ) : (
-                fourTokenProvider()
-              )}
-            </div>
-          </div>
-          <div className={styles.tokenProvidingBox}>
-            <div className="single-token-box">
-              <h1>Single-Oni : Level 0</h1>
-              {loading ? (
-                <h3 className={styles.loading}>loading..</h3>
-              ) : (
-                singleTokenProvider(0)
-              )}
-            </div>
-          </div>
+          <TestingInputBox title="Multi-Oni : Level 0" loading={contractState}>
+            {fourTokenProvider()}
+          </TestingInputBox>
+          <TestingInputBox title="Single-Oni : Level 0" loading={contractState}>
+            {singleTokenProvider(0)}
+          </TestingInputBox>
         </div>
-        <ResultBox loading={loading} passedOni={passedOni} />
+        <ResultBox loading={contractState} passedOni={passedOni} />
       </div>
     );
   }
