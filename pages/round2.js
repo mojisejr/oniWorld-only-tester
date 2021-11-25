@@ -266,7 +266,9 @@ function OniTestRound2() {
         <div className={styles.singleTokenBox}>
           <select
             className={styles.oniSelector}
-            onChange={(e) => setSelectedOni({ token1: e.target.value })}
+            onChange={(e) =>
+              dispatch({ type: "token1", updateToken: e.target.value })
+            }
           >
             <option>select token (level: {level})</option>
             {canTestOni.map((oni) => (
