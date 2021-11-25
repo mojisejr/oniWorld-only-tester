@@ -1,12 +1,13 @@
 import { useEffect, useState, useReducer } from "react";
 import Link from "next/link";
+import Head from "next/head";
 import styles from "../styles/oniTest.module.css";
 import NoOni from "./components/NoOni";
 import RoundClosed from "./components/RoundClosed";
 import ResultBox from "./components/ResultBox";
 import TestingInputBox from "./components/TestingInputBox";
-import { useWallet, WalletState } from "./hooks/WalletConnect";
-import { useContract, ContractState } from "./hooks/OniContract";
+import { useWallet, WalletState } from "../hooks/WalletConnect";
+import { useContract, ContractState } from "../hooks/OniContract";
 
 function OniTestRound2() {
   //wallet
@@ -292,6 +293,9 @@ function OniTestRound2() {
   function TestingMainComponent() {
     return (
       <div className={styles.container}>
+        <Head>
+          <title>Round {round}</title>
+        </Head>
         <div className={styles.Header}>
           <button onClick={connect} className={styles.btnConnect}>
             {account ? `connected to : ${account}` : "Connect Wallet"}

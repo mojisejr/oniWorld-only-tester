@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { abi, address } from "../smartcontract/oni";
+import { abi, address } from "../../smartcontract/oni";
 import Web3 from "web3";
 
 function OniProfile() {

@@ -1,6 +1,6 @@
 import styles from "../../styles/oniTest.module.css";
-import { ContractState } from "../hooks/OniContract";
-function ResultBox({ loading, passedOni }) {
+import { ContractState } from "../../hooks/OniContract";
+function ResultBox({ loading, passedOni = [] }) {
   return (
     <div className="result-box">
       {passedOni.length > 0 ? (

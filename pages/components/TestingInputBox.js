@@ -1,5 +1,5 @@
 import styles from "../../styles/oniTest.module.css";
-import { ContractState } from "../hooks/OniContract";
+import { ContractState } from "../../hooks/OniContract";
 function TestingInputBox({ children, title, loading }) {
   return (
     <div className={styles.tokenProvidingBox}>
