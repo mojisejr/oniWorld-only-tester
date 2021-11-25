@@ -168,7 +168,7 @@ function OniTestRound2() {
             }
           >
             <option>select third token (level 0)</option>
-            {level2Oni
+            {level0Oni
               .filter(
                 (oni) => oni != (state.token1 || state.token2 || state.token4)
               )
