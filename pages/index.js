@@ -1,4 +1,3 @@
-import OniTestRound1 from "./round1";
 import Link from "next/link";
 
 export default function Home() {
