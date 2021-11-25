@@ -73,19 +73,6 @@ export const abi = [
         name: "tokenId",
         type: "uint256",
       },
-    ],
-    name: "OniFailedToken",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
       {
         indexed: false,
         internalType: "uint256",
@@ -119,6 +106,20 @@ export const abi = [
       },
     ],
     name: "OniMinted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+      { indexed: false, internalType: "bool", name: "passed", type: "bool" },
+    ],
+    name: "OniTestingResult",
     type: "event",
   },
   {
@@ -177,6 +178,13 @@ export const abi = [
   {
     inputs: [],
     name: "NFT_big_price",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "NFT_huge_price",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
@@ -248,13 +256,6 @@ export const abi = [
     name: "getApproved",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "temp", type: "uint256" }],
-    name: "increaseMaxSupply",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -524,5 +525,4 @@ export const abi = [
     type: "function",
   },
 ];
-
-export const address = "0x64de2ac1c0D97C37e1daE4B1eF810a1D58DA13be";
+export const address = "0x06527337b079EC92576E4c8dE262f067fF54C5AE";
