@@ -62,7 +62,7 @@ function OniTestRound1() {
   //fetch all available Oni of current connected account
   async function getAvailableOni() {
     setContractState(ContractState.LOADING);
-    const allOni = await fetchAllOniOf(wallet.account);
+    const allOni = await fetchAllOniOf(account);
     const oni = await getAllOniByLevel(allOni);
     setLevel0Oni(oni.level0Oni);
     setPassedOni(oni.level2Oni);
