@@ -102,3 +102,23 @@
   padding-left: 50px;
   padding-right: 50px;
 }
+
+.oniListItem {
+  display: flex;
+  margin-bottom: 10px;
+  font-size: 18px;
+  justify-content: space-between;
+  border: 1px solid black;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.oniListItemTitle {
+  font-weight: bold;
+}
+
+.oniListItemCount {
+  color: orangered;
+  font-weight: bold;
+  padding: 30px;
+}

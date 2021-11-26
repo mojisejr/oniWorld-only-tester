@@ -58,7 +58,7 @@ export function useContract() {
       throw new Error("getAvailableOni: cannot provide 0 oni");
     }
     for (let i = 0; i < oni.length; i++) {
-      const oniLevel = +(await contract.methods.oni(i + 1).call());
+      const oniLevel = +(await contract.methods.oni(oni[i]).call());
       switch (oniLevel) {
         case 0:
           level0Oni.push(oni[i]);

@@ -8,6 +8,7 @@ import ResultBox from "./components/ResultBox";
 import TestingInputBox from "./components/TestingInputBox";
 import { useWallet, WalletState } from "../hooks/WalletConnect";
 import { useContract, ContractState } from "../hooks/OniContract";
+import OniInWallet from "./components/OniInWallet";
 
 function OniTestRound3() {
   //wallet
@@ -42,6 +43,7 @@ function OniTestRound3() {
   });
 
   const [passedOni, setPassedOni] = useState([]);
+  const [oniInWallet, setOniInWallet] = useState(null);
 
   //check connection, config web3 and init smart contract object.
   useEffect(() => {
@@ -106,11 +108,13 @@ function OniTestRound3() {
     setLevel2Oni(oni.level2Oni);
     setLevel3Oni(oni.level3Oni);
     setPassedOni(oni.level4Oni);
+    setOniInWallet(oni);
     setContractState(ContractState.SUCCESS);
   }
 
   //multi token provided testing function
   async function enterMultiTesting() {
+    setContractState(ContractState.LOADING);
     let tokenArray = [];
     tokenArray = Object.values(state).filter((oni) => oni != null);
     if (!(await isTestOpen())) {
@@ -127,6 +131,7 @@ function OniTestRound3() {
 
   //single token provided testing function
   async function enterSingleTesting() {
+    setContractState(ContractState.LOADING);
     if (!(await isTestOpen())) {
       alert("SingleTesting: Testing is closed");
     } else {
@@ -549,6 +554,7 @@ function OniTestRound3() {
             <span className={styles.btnConnect}>Back</span>
           </Link>
         </div>
+        {oniInWallet ? <OniInWallet oni={oniInWallet} /> : null}
         <div className={styles.testBox}>
           <TestingInputBox title="Multi-Oni : Level 3" loading={contractState}>
             {twoTokenProvider()}
