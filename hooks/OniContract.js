@@ -12,11 +12,41 @@ export const ContractState = {
 export function useContract() {
   const [contract, setContract] = useState();
   const [contractState, setContractState] = useState(ContractState.IDLE);
+  const [web3, setWeb3] = useState(null);
 
   async function init(web3) {
     const contract = new web3.eth.Contract(abi, address);
+    setWeb3(web3);
     setContract(contract);
     setContractState(ContractState.READY);
+  }
+
+  async function getPrice() {
+    const smallPrice = await contract.methods.NFT_small_price().call();
+    const bigPrice = await contract.methods.NFT_big_price().call();
+
+    return {
+      smallPrice,
+      bigPrice,
+    };
+  }
+
+  async function mintBigTeam(minter) {
+    const { bigPrice } = await getPrice();
+    const tx = await contract.methods.bigTeam().send({
+      from: minter,
+      value: web3.utils.toWei(bigPrice.toString(), "wei"),
+    });
+    return tx.status;
+  }
+
+  async function mintSmallTeam(minter) {
+    const { smallPrice } = await getPrice();
+    const tx = await contract.methods.smallTeam().send({
+      from: minter,
+      value: web3.utils.toWei(smallPrice.toString(), "wei"),
+    });
+    return tx.status;
   }
 
   async function isTestOpen() {
@@ -45,7 +75,9 @@ export function useContract() {
     return fetchedOni;
   }
 
-  async function getFailedOniOf(account) {}
+  async function ownerOf(tokenId) {
+    return await contract.methods.ownerOf(tokenId).call();
+  }
 
   async function getAllOniByLevel(oni) {
     let level0Oni = [];
@@ -107,6 +139,7 @@ export function useContract() {
 
   return {
     init,
+    getPrice,
     isTestOpen,
     getCurrentRound,
     balanceOf,
@@ -116,5 +149,8 @@ export function useContract() {
     Test,
     contractState,
     setContractState,
+    ownerOf,
+    mintBigTeam,
+    mintSmallTeam,
   };
 }
