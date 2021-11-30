@@ -1,15 +1,20 @@
 import { GoogleSpreadsheet } from "google-spreadsheet";
-const creds = require("../../oniworld.json");
 
 async function GoogleSheetInit() {
   try {
     const doc = new GoogleSpreadsheet(process.env.SHEET_ID);
-    await doc.useServiceAccountAuth(creds);
+    const credential = JSON.parse(process.env.CREDENTIAL);
+    console.log(credential);
+    await doc.useServiceAccountAuth({
+      client_email: credential.client_email,
+      private_key: credential.private_key,
+    });
     await doc.loadInfo();
     const sheet = doc.sheetsByIndex[0];
 
     return sheet;
   } catch (e) {
+    console.log(e);
     return null;
   }
 }

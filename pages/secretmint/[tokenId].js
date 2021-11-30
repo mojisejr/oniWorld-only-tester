@@ -78,20 +78,23 @@ function SecretMint() {
   }
 
   async function updateTokenOwnerScore() {
-    const result = await fetch(`/api/csvReferral`, {
-      method: "POST",
-      body: JSON.stringify({
-        tokenOwner: state.tokenOwner,
-        minter: state.minter,
-        tokenId: state.tokenId,
-        score: 1,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return result;
+    try {
+      await fetch(`/api/referral`, {
+        method: "POST",
+        body: JSON.stringify({
+          tokenOwner: state.tokenOwner,
+          minter: state.minter,
+          tokenId: state.tokenId,
+          score: 1,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   // async function checkMinted(account) {
@@ -149,8 +152,8 @@ function SecretMint() {
         updateMintStatus(MINT_STATUS.MINTING);
         const result = await mintSmallTeam(account);
         if (result === true) {
-          const { result } = await updateTokenOwnerScore();
-          if (result === true) {
+          const updateScoreResult = await updateTokenOwnerScore();
+          if (updateScoreResult === true) {
             updateMintStatus(MINT_STATUS.SUCCESS);
           } else {
             updateMintStatus(MINT_STATUS.FAILURE);

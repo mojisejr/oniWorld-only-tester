@@ -2,23 +2,13 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 export default function Home() {
+  //ตรงนี้จะใช้สำหรับดึงเอาข้อมูลจาก url ของเรามาครับ
   const router = useRouter();
-  const { ref } = router.query;
-  async function updateTokenOwnerScore(tokenOwnerAddr, minterAddr, tokenId) {
-    const result = await fetch(`/api/csvReferral`, {
-      method: "POST",
-      body: JSON.stringify({
-        tokenOwner: tokenOwnerAddr,
-        minter: minterAddr,
-        tokenId: tokenId,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  //ตัวอย่างเช่น ถ้าเราจะให้ url = oniworld.fun/?refToken=1
+  //จะได้ว่า
+  const refToken = router.query.refToken;
+  //ตรงนี้ refToken จะ = 1
 
-    return result;
-  }
   return (
     <div
       style={{
@@ -48,8 +38,6 @@ export default function Home() {
           <a style={{ padding: "3px" }}>Round3</a>
         </Link>
       </div>
-
-      <button>Mint test button</button>
     </div>
   );
 }
