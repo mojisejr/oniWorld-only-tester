@@ -78,7 +78,7 @@ function SecretMint() {
   }
 
   async function updateTokenOwnerScore() {
-    const result = await fetch(`/api/referral`, {
+    const result = await fetch(`/api/csvReferral`, {
       method: "POST",
       body: JSON.stringify({
         tokenOwner: state.tokenOwner,

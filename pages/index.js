@@ -1,6 +1,24 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function Home() {
+  const router = useRouter();
+  const { ref } = router.query;
+  async function updateTokenOwnerScore(tokenOwnerAddr, minterAddr, tokenId) {
+    const result = await fetch(`/api/csvReferral`, {
+      method: "POST",
+      body: JSON.stringify({
+        tokenOwner: tokenOwnerAddr,
+        minter: minterAddr,
+        tokenId: tokenId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return result;
+  }
   return (
     <div
       style={{
@@ -30,6 +48,8 @@ export default function Home() {
           <a style={{ padding: "3px" }}>Round3</a>
         </Link>
       </div>
+
+      <button>Mint test button</button>
     </div>
   );
 }
